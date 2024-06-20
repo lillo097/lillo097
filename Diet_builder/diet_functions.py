@@ -111,7 +111,7 @@ def pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal
 
 
 def create_excel(day, df_al, cal, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot):
-    file_path = r"C:\Users\lbasile\PycharmProjects\TIM_dev\Preprocessing_pipeline\output_data\diet_plan_" + str(cal) + ".xlsx"
+    file_path = r"C:\Users\lbasile\PycharmProjects\pythonProject\my_projects\lillo097\Diet_builder\output_data\diet_plan_" + str(cal) + ".xlsx"
 
     # Days of the week
     days_of_week = ["Lunedi", "Martedi", "Mercoledi", "Giovedi", "Venerdi", "Sabato", "Domenica"]
@@ -159,8 +159,6 @@ def create_excel(day, df_al, cal, proteine_tot, grassi_tot, carboidrati_tot, cal
         worksheet.cell(row=num_rows + 5, column=1).value = "Apporto di calorie totale:"
         worksheet.cell(row=num_rows + 5, column=2).value = round(value(calorie_tot), 1)
         worksheet.cell(row=num_rows + 5, column=3).value = "kcal"
-
-
 
     workbook.save(file_path)
 
