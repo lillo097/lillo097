@@ -5,17 +5,23 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    # Leggi il file Excel
-    xls = pd.ExcelFile(r"/output_data/diet_plan_2300.xlsx")
-    sheet_names = xls.sheet_names
 
-    # Converti ogni foglio in una tabella HTML
-    sheets = {}
-    for sheet_name in sheet_names:
-        df = pd.read_excel(xls, sheet_name=sheet_name)
-        sheets[sheet_name] = df.to_html(classes='table table-striped', index=False)
+    paths = {
+        '2300': "/Users/liviobasile/Documents/Machine Learning/lillo097/Diet_builder/output_data/diet_plan_2300.xlsx",
+        '2000': "/Users/liviobasile/Documents/Machine Learning/lillo097/Diet_builder/output_data/diet_plan_2000.xlsx"
+    }
 
-    # Template HTML
+    all_sheets = {'2300': {}, '2000': {}}
+
+    for version, path in paths.items():
+        xls = pd.ExcelFile(path)
+        sheet_names = xls.sheet_names
+
+        for sheet_name in sheet_names:
+            df = pd.read_excel(xls, sheet_name=sheet_name)
+            df = df.fillna('')
+            all_sheets[version][sheet_name] = df.to_html(classes='table table-striped', index=False)
+
     html = '''
     <html>
         <head>
@@ -32,18 +38,35 @@ def home():
         </head>
         <body>
             <div class="container">
-                <h1 class="mt-5">Dati Tabellari</h1>
+                <h1 class="mt-5">2300 Kcal diet (Gym day)</h1>
                 <div class="mt-3">
-                    <ul class="nav nav-tabs" id="sheet-tabs">
-                        {% for sheet in sheet_names %}
+                    <ul class="nav nav-tabs" id="sheet-tabs-2300">
+                        {% for sheet in all_sheets['2300'].keys() %}
                             <li class="nav-item">
-                                <a class="nav-link {% if loop.index == 1 %}active{% endif %}" href="#" data-sheet="{{ sheet }}">{{ sheet }}</a>
+                                <a class="nav-link {% if loop.index == 1 %}active{% endif %}" href="#" data-sheet="{{ sheet }}" data-version="2300">{{ sheet }}</a>
                             </li>
                         {% endfor %}
                     </ul>
                     <div class="mt-3">
-                        {% for sheet, table in sheets.items() %}
-                            <div class="sheet-table {% if loop.index == 1 %}active{% endif %}" id="table-{{ sheet }}">
+                        {% for sheet, table in all_sheets['2300'].items() %}
+                            <div class="sheet-table {% if loop.index == 1 %}active{% endif %}" id="table-2300-{{ sheet }}">
+                                {{ table | safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <h1 class="mt-5">2000 Kcal diet (Rest day)</h1>
+                <div class="mt-3">
+                    <ul class="nav nav-tabs" id="sheet-tabs-2000">
+                        {% for sheet in all_sheets['2000'].keys() %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if loop.index == 1 %}active{% endif %}" href="#" data-sheet="{{ sheet }}" data-version="2000">{{ sheet }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-3">
+                        {% for sheet, table in all_sheets['2000'].items() %}
+                            <div class="sheet-table {% if loop.index == 1 %}active{% endif %}" id="table-2000-{{ sheet }}">
                                 {{ table | safe }}
                             </div>
                         {% endfor %}
@@ -52,22 +75,33 @@ def home():
             </div>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    const tabs = document.querySelectorAll('#sheet-tabs a');
-                    tabs.forEach(tab => {
+                    const tabs2300 = document.querySelectorAll('#sheet-tabs-2300 a');
+                    tabs2300.forEach(tab => {
                         tab.addEventListener('click', function(event) {
                             event.preventDefault();
-                            // Rimuovi la classe 'active' da tutti i tab
-                            tabs.forEach(t => t.classList.remove('active'));
-                            // Aggiungi la classe 'active' al tab cliccato
+                            tabs2300.forEach(t => t.classList.remove('active'));
                             this.classList.add('active');
 
-                            // Nascondi tutte le tabelle
                             const tables = document.querySelectorAll('.sheet-table');
                             tables.forEach(table => table.classList.remove('active'));
 
-                            // Mostra la tabella associata al tab cliccato
                             const sheet = this.getAttribute('data-sheet');
-                            document.getElementById('table-' + sheet).classList.add('active');
+                            document.getElementById('table-2300-' + sheet).classList.add('active');
+                        });
+                    });
+
+                    const tabs2000 = document.querySelectorAll('#sheet-tabs-2000 a');
+                    tabs2000.forEach(tab => {
+                        tab.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            tabs2000.forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
+
+                            const tables = document.querySelectorAll('.sheet-table');
+                            tables.forEach(table => table.classList.remove('active'));
+
+                            const sheet = this.getAttribute('data-sheet');
+                            document.getElementById('table-2000-' + sheet).classList.add('active');
                         });
                     });
                 });
@@ -76,7 +110,7 @@ def home():
     </html>
     '''
 
-    return render_template_string(html, sheets=sheets, sheet_names=sheet_names)
+    return render_template_string(html, all_sheets=all_sheets)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=6000, debug=True)

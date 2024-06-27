@@ -7,6 +7,8 @@ config = configparser.ConfigParser()
 config.read(config_file)
 
 file_path_DB = config.get('Paths', 'file_path_DB')
+file_path_xlsx = config.get('Paths', 'file_path')
+
 DB = config.get('General', 'DB')
 day = config.get('General', 'day')
 save_xlsx = config.get('General', 'save_xlsx')
@@ -30,10 +32,11 @@ if save_xlsx == "True":
     peso_min_alimenti = dizionario_alimenti_min  # g di alimento minimo
     peso_max_alimenti = dizionario_alimenti_max # g di alimento massimo
     df_al, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot, problema = pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal_min, cal_max, peso_min_alimenti, peso_max_alimenti, sorted_alimenti_min, sorted_alimenti_max)
+    print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("Stato:", LpStatus[problema.status])
     df_al[' Violed'] = df_al.apply(check_range, axis=1)
     print(df_al)
-    create_excel(day, df_al, cal_max, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot)
+    create_excel(day, df_al, cal_max, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot, file_path_xlsx)
 else:
     sorted_alimenti_min, sorted_alimenti_max, final_daily_dict, dizionario_alimenti_min, dizionario_alimenti_max = process_food_data(file_path_DB, file_path_diet, DB, day)
     alimenti = final_daily_dict

@@ -6,19 +6,15 @@ from openpyxl import load_workbook
 import os
 
 def process_food_data(file_path_DB, file_path_diet, sheet_name_1, sheet_name_2):
-    # Read the excel sheets
     sheet_1 = pd.read_excel(file_path_DB, sheet_name=sheet_name_1)
     sheet_2 = pd.read_excel(file_path_diet, sheet_name=sheet_name_2)
 
-    # Convert sheet_1 to a dictionary of records
     sheet_1_to_dict = sheet_1.to_dict(orient='records')
 
-    # Extract lists from sheet_2
     daily_intake_list = sheet_2["Unnamed: 1"].dropna().tolist()
     min_q = sheet_2["Unnamed: 2"].dropna().tolist()[1:]
     max_q = sheet_2["Unnamed: 3"].dropna().tolist()[1:]
 
-    # Create a dictionary for food data
     DB_alimenti = {}
     for elemento in sheet_1_to_dict:
         alimento = elemento['Alimento']
@@ -30,7 +26,6 @@ def process_food_data(file_path_DB, file_path_diet, sheet_name_1, sheet_name_2):
         }
         DB_alimenti[alimento] = valori
 
-    # Create dictionaries for minimum and maximum daily intake
     dizionario_alimenti_min = {}
     dizionario_alimenti_max = {}
 
@@ -42,12 +37,10 @@ def process_food_data(file_path_DB, file_path_diet, sheet_name_1, sheet_name_2):
             dizionario_alimenti_min[alimento] += minimo / 100
             dizionario_alimenti_max[alimento] += massimo / 100
 
-    # Create the final daily dictionary
     final_daily_dict = {}
     for alimento in daily_intake_list:
         final_daily_dict[alimento] = DB_alimenti[alimento]
 
-    # Sort dictionaries
     sorted_alimenti_min = dict(sorted(dizionario_alimenti_min.items()))
     sorted_alimenti_max = dict(sorted(dizionario_alimenti_max.items()))
 
@@ -55,13 +48,10 @@ def process_food_data(file_path_DB, file_path_diet, sheet_name_1, sheet_name_2):
 
 
 def pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal_min, cal_max, peso_min_alimenti, peso_max_alimenti, sorted_alimenti_min, sorted_alimenti_max):
-    # Creazione del problema
     problema = LpProblem("PianificazionePasti", LpMaximize)
 
-    # Variabili di decisione (quantità di ciascun alimento da consumare)
     alimenti_vars = LpVariable.dicts("", alimenti, lowBound=0, cat='Continuous')
 
-    # Funzione obiettivo: bilanciare l'apporto proteico, lipidico e glucidico
     proteine_tot = lpSum([alimenti[i]['proteine'] * alimenti_vars[i] for i in alimenti])
     grassi_tot = lpSum([alimenti[i]['grassi'] * alimenti_vars[i] for i in alimenti])
     carboidrati_tot = lpSum([alimenti[i]['carboidrati'] * alimenti_vars[i] for i in alimenti])
@@ -69,7 +59,6 @@ def pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal
 
     problema += proteine_tot  # La funzione obiettivo può essere modificata in base alle esigenze
 
-    # Vincoli sui macronutrienti
     problema += proteine_tot >= P_min, "Proteine_min"
     problema += proteine_tot <= P_max, "Proteine_max"
     problema += grassi_tot >= F_min, "Grassi_min"
@@ -79,12 +68,10 @@ def pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal
     problema += calorie_tot >= cal_min, "Calorie_min"
     problema += calorie_tot <= cal_max, "Calorie_max"
 
-    # Vincoli sul peso degli alimenti
     for alimento in alimenti:
         problema += alimenti_vars[alimento] >= peso_min_alimenti[alimento], f"Peso_min_{alimento}"
         problema += alimenti_vars[alimento] <= peso_max_alimenti[alimento], f"Peso_max_{alimento}"
 
-    # Risoluzione del problema
     problema.solve()
 
     nomi_variabili = []
@@ -107,8 +94,8 @@ def pianificazione_pasti(alimenti, P_min, P_max, F_min, F_max, C_min, C_max, cal
     return df_al, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot, problema
 
 
-def create_excel(day, df_al, cal, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot):
-    file_path = r"C:\Users\lbasile\PycharmProjects\pythonProject\my_projects\lillo097\Diet_builder\output_data\diet_plan_" + str(cal) + ".xlsx"
+def create_excel(day, df_al, cal, proteine_tot, grassi_tot, carboidrati_tot, calorie_tot, file_path):
+    file_path = file_path + str(cal) + ".xlsx"
 
     # Days of the week
     days_of_week = ["Lunedi", "Martedi", "Mercoledi", "Giovedi", "Venerdi", "Sabato", "Domenica"]
@@ -128,34 +115,29 @@ def create_excel(day, df_al, cal, proteine_tot, grassi_tot, carboidrati_tot, cal
         except KeyError as e:
             print(f"Errore durante la rimozione delle colonne: {e}")
 
+        #df_al.to_csv(r'/Users/liviobasile/Downloads/Diet_builder/dataframe.csv', index=False)
 
-        # Add the DataFrame to the specified day's sheet
         df_al.to_excel(writer, sheet_name=day, index=False)
 
         workbook = writer.book
         worksheet = workbook[day]
 
-        # Determine the number of rows in the DataFrame
         num_rows = df_al.shape[0]
 
         # Add two empty rows after the data
-        worksheet.insert_rows(num_rows + 1, amount=2)
+        #worksheet.insert_rows(num_rows + 1, amount=1)
 
-        worksheet.cell(row=num_rows + 2, column=1).value = "Apporto proteico totale:"
-        worksheet.cell(row=num_rows + 2, column=2).value = round(value(proteine_tot), 1)
-        worksheet.cell(row=num_rows + 2, column=3).value = "g"
+        worksheet.cell(row=num_rows + 3, column=1).value = "Apporto proteico totale:"
+        worksheet.cell(row=num_rows + 3, column=2).value = f"{round(value(proteine_tot), 1)} g"
 
-        worksheet.cell(row=num_rows + 3, column=1).value = "Apporto di grassi totale:"
-        worksheet.cell(row=num_rows + 3, column=2).value = round(value(grassi_tot), 1)
-        worksheet.cell(row=num_rows + 3, column=3).value = "g"
+        worksheet.cell(row=num_rows + 4, column=1).value = "Apporto di grassi totale:"
+        worksheet.cell(row=num_rows + 4, column=2).value = f"{round(value(grassi_tot), 1)} g"
 
-        worksheet.cell(row=num_rows + 4, column=1).value = "Apporto di carboidrati totale:"
-        worksheet.cell(row=num_rows + 4, column=2).value = round(value(carboidrati_tot), 1)
-        worksheet.cell(row=num_rows + 4, column=3).value = "g"
+        worksheet.cell(row=num_rows + 5, column=1).value = "Apporto di carboidrati totale:"
+        worksheet.cell(row=num_rows + 5, column=2).value = f"{round(value(carboidrati_tot), 1)} g"
 
-        worksheet.cell(row=num_rows + 5, column=1).value = "Apporto di calorie totale:"
-        worksheet.cell(row=num_rows + 5, column=2).value = round(value(calorie_tot), 1)
-        worksheet.cell(row=num_rows + 5, column=3).value = "kcal"
+        worksheet.cell(row=num_rows + 6, column=1).value = "Apporto di calorie totale:"
+        worksheet.cell(row=num_rows + 6, column=2).value = f"{round(value(calorie_tot), 1)} kcal"
 
     workbook.save(file_path)
 
