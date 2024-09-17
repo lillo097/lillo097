@@ -1,10 +1,8 @@
-"lo script funziona, va soltanto reingegnerizzato in funzioni."
-
+import matplotlib.pyplot as plt
 import pandas as pd
 import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 import os
 from datetime import datetime
 
@@ -63,8 +61,95 @@ def MiniLM_similarity_score(model, sentences):
     #print(f"Match with Possible Response: {is_match_response} (Similarity: {similarity_matrix[0][2]:.2f})")
     return f"{similarity_matrix[0][1]:.2f}", f"{similarity_matrix[0][2]:.2f}"
 
+def cake_data(filtered_steps, cake_graph_data):
 
-def brutal_run(data_ops, data_intent, path):
+    data = pd.read_csv(r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv', sep=",", encoding='latin1')
+
+    step_1 = list(set(data["Step 1"].dropna()))
+    step_1_lower = [elem.lower() for elem in step_1]
+
+    step_2 = list(set(data["Step 2"].dropna()))
+    step_2_lower = [elem.lower() for elem in step_2]
+
+    step_3 = list(set(data["Step 3"].dropna()))
+    step_3_lower = [elem.lower() for elem in step_3]
+
+    step_4 = list(set(data["Step 4"].dropna()))
+    step_4_lower = [elem.lower() for elem in step_4]
+
+    current_last = ''
+    step = ''
+    if filtered_steps[0] in step_1_lower:
+        step = "step_1"
+        current_last = filtered_steps[0]
+
+    if len(filtered_steps) > 1 and filtered_steps[1] in step_2_lower:
+        step = "step_2"
+        current_last = filtered_steps[1]
+
+    if len(filtered_steps) > 2 and filtered_steps[2] in step_3_lower:
+        step = "step_3"
+        current_last = filtered_steps[2]
+
+    if len(filtered_steps) > 3 and filtered_steps[3] in step_4_lower:
+        step = "step_4"
+        current_last = filtered_steps[3]
+    # else:
+    #     current_last = "None"
+
+    if current_last not in cake_graph_data and current_last != "None":
+        cake_graph_data[current_last] = {"count": 1, "step": step}
+    else:
+        cake_graph_data[current_last]["count"] += 1
+        cake_graph_data[current_last]["step"] = step
+
+def plot_pie_chart(cake_graph_data):
+    labels = list(cake_graph_data.keys())
+    sizes = [value['count'] for value in cake_graph_data.values()]
+
+    # Colori personalizzati
+    colors = plt.get_cmap('tab20')(range(len(sizes)))  # Palette di colori
+
+    # Esplosione per enfatizzare la fetta più grande
+    explode = [0.1 if size == max(sizes) else 0 for size in sizes]
+
+    plt.figure(figsize=(15, 15))
+
+    # Grafico a torta con effetti visivi migliorati
+    wedges, texts, autotexts = plt.pie(
+        sizes,
+        labels=labels,
+        autopct='%1.1f%%',
+        startangle=90,
+        explode=explode,  # Esplosione della fetta più grande
+        colors=colors,     # Colori personalizzati
+        shadow=True,       # Aggiunta dell'ombra
+        wedgeprops={'edgecolor': 'black'},  # Bordo nero attorno alle sezioni
+        textprops={'fontsize': 12}  # Imposta la dimensione del testo
+    )
+
+    # Migliora la leggibilità delle percentuali all'interno delle sezioni
+    for autotext in autotexts:
+        autotext.set_color('black')  # Colore bianco per contrasto
+        autotext.set_fontsize(14)    # Aumenta la dimensione del testo
+
+    # Migliora il layout delle etichette
+    for text in texts:
+        text.set_fontsize(12)  # Imposta la dimensione del testo delle etichette
+
+    plt.axis('equal')  # Assicura che il grafico sia un cerchio perfetto
+    plt.title('Distribuzione degli Steps', fontsize=16)
+    plt.tight_layout()  # Assicura che tutto rientri nella figura
+
+    current_date = datetime.now()
+    formatted_date = current_date.strftime("%Y-%m-%d")
+    output_dir = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output"
+    run_folder = os.path.join(output_dir, f"run_{formatted_date}")
+
+    plt.savefig(os.path.join(run_folder, "pie_chart.png"))
+    plt.show()
+
+def brutal_run(data_ops, data_intent, path, cake_graph_data):
 
     data_ops = convert_to_lowercase(data_ops)
     data_intent = convert_to_lowercase(data_intent)
@@ -96,9 +181,9 @@ def brutal_run(data_ops, data_intent, path):
     formatted_date = current_date.strftime("%Y-%m-%d")
 
 # Definisci il percorso assoluto della cartella di output
+
     output_dir = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output"
     run_folder = os.path.join(output_dir, f"run_{formatted_date}")
-
     # Crea la directory 'output\run_{formatted_date}' se non esiste
     if not os.path.exists(run_folder):
         os.makedirs(run_folder)
@@ -111,11 +196,13 @@ def brutal_run(data_ops, data_intent, path):
 
     no_llm_session_ids = []
     llm_session_ids = []
+
     with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/ops_{date}.txt", "a", encoding="utf-8") as file:
         i = 1
         for session_id in session_ids:
             filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
             conv = filtered_data_sessionIds["Query"].tolist()
+            print(conv)
 
             found_llm = False
 
@@ -129,15 +216,24 @@ def brutal_run(data_ops, data_intent, path):
                 continue
 
             filtered_steps = [step for step in conv if step not in ignore_steps]
+            filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
+
+            print(filtered_steps)
+
+            print(filtered_steps)
+
+            cake_data(filtered_steps, cake_graph_data)
+
+            print("°"*1000)
             result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
             i += 1
             file.write(result)
             no_llm_session_ids.append(session_id)
 
-    print(llm_session_ids)
-    print(len(llm_session_ids))
-    print(no_llm_session_ids)
-    print(len(no_llm_session_ids))
+    # print(llm_session_ids)
+    # print(len(llm_session_ids))
+    # print(no_llm_session_ids)
+    # print(len(no_llm_session_ids))
 
     with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/ops_{date}.txt", "a") as file:
         file.write("\n")
@@ -232,20 +328,27 @@ def brutal_run(data_ops, data_intent, path):
                         file1.write("\n")
                         file1.write(f"{'°'*1000}\n")
 
-                    print(f"Path conversazione: {elem[3]}\n")
-                    print(f"Richiesta utente: {elem[0]}\n")
-                    print(f"Intento italiano: {i}\n")
-                    print(f"Possibile risposta: {a}\n")
-                    print(f"Similarity intent score: {match_intent}\n")
-                    print(f"Similarity answer score: {match_answer}\n")
-                    print("-"*1000)
+                    # print(f"Path conversazione: {elem[3]}\n")
+                    # print(f"Richiesta utente: {elem[0]}\n")
+                    # print(f"Intento italiano: {i}\n")
+                    # print(f"Possibile risposta: {a}\n")
+                    # print(f"Similarity intent score: {match_intent}\n")
+                    # print(f"Similarity answer score: {match_answer}\n")
+                    # print("-"*1000)
                 #file.write("-" * 1000 + "\n")
 
 
+
+
 #convert_xlsx_to_csv(input_directory, output_directory)
+
+cake_graph_data = {}
 for path in paths:
     data_ops = pd.read_csv(path, sep=",", encoding='latin1')
     data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
 
-    brutal_run(data_ops, data_intent, path)
+    brutal_run(data_ops, data_intent, path, cake_graph_data)
+
+plot_pie_chart(cake_graph_data)
+
 
