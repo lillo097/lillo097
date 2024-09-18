@@ -6,14 +6,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import os
 from datetime import datetime
 
-input_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\data'
-output_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\csv_data'
-
-# file_path_ops = r"C:\Users\lbasile\PycharmProjects\ING_dev\csv_data\Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.csv"
-file_path_intent = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv"
-local_model_path = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\lib\paraphrase-multilingual-MiniLM-L12-v2-local"
-model = SentenceTransformer(local_model_path)
-
 def convert_xlsx_to_csv(input_directory, output_directory):
 
     if not os.path.exists(output_directory):
@@ -37,8 +29,32 @@ def get_file_paths(directory):
 
     return file_paths
 
-directory_path = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\csv_data'
-paths = get_file_paths(directory_path)
+def get_project_path(*subdirs):
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    ING_dev_folder = current_dir.replace("\lib", "")
+    #print("ing_dev ", ING_dev_folder)
+    full_path = os.path.join(ING_dev_folder, *subdirs)
+
+    return full_path
+
+# input_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\data'
+# output_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\csv_data'
+# # file_path_ops = r"C:\Users\lbasile\PycharmProjects\ING_dev\csv_data\Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.csv"
+# file_path_intent = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv"
+#local_model_path = r"C:\Users\lbasile\PycharmProjects\lillo097\ING_dev\paraphrase-multilingual-MiniLM-L12-v2-local"
+
+input_directory = get_project_path('data')
+output_directory = get_project_path('csv_data')
+
+output_final = get_project_path('output')
+
+file_path_intent = get_project_path('NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv')
+local_model_path = get_project_path('paraphrase-multilingual-MiniLM-L12-v2-local')
+
+
+model = SentenceTransformer(local_model_path)
+paths = get_file_paths(output_directory)
 
 def convert_to_lowercase(df):
     return df.map(lambda x: x.lower() if isinstance(x, str) else x)
@@ -47,6 +63,48 @@ def to_title_case(s):
     if isinstance(s, str):
         return s.title()
     return s
+
+def delete_empty_content_files_in_subfolder(output_folder):
+    # Verifica se la cartella di output esiste
+    if not os.path.isdir(output_folder):
+        print(f"La cartella '{output_folder}' non esiste.")
+        return
+
+    # Ottieni la lista delle sottocartelle nella cartella di output
+    subfolders = [f.path for f in os.scandir(output_folder) if f.is_dir()]
+
+    # Controlla se c'è almeno una sottocartella
+    if not subfolders:
+        print(f"Nessuna sottocartella trovata nella cartella '{output_folder}'.")
+        return
+
+    # Prende la prima sottocartella (se ce ne sono più di una, modifica secondo le tue necessità)
+    subfolder = subfolders[0]
+
+    # Itera su tutti i file nella sottocartella
+    for file_name in os.listdir(subfolder):
+        file_path = os.path.join(subfolder, file_name)
+
+        # Verifica se è un file (e non una directory)
+        if os.path.isfile(file_path):
+            try:
+                # Verifica se il file contiene qualcosa (non solo spazi o righe vuote)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read().strip()
+
+                # Dopo aver chiuso il file, verifica se è vuoto
+                if not content:  # Se content è vuoto dopo aver tolto gli spazi
+                    time.sleep(0.1)  # Attendi per garantire che il file sia completamente chiuso
+                    os.remove(file_path)
+                    print(f"File '{file_path}' eliminato perché vuoto (o contenente solo spazi).")
+                else:
+                    print(f"File '{file_path}' contiene testo, non eliminato.")
+            except PermissionError as e:
+                print(f"Errore: Impossibile eliminare '{file_path}' perché è in uso: {e}")
+            except Exception as e:
+                print(f"Errore: Si è verificato un problema con il file '{file_path}': {e}")
+        else:
+            print(f"'{file_path}' non è un file, non verrà eliminato.")
 
 def MiniLM_similarity_score(model, sentences):
 
@@ -63,7 +121,7 @@ def MiniLM_similarity_score(model, sentences):
 
 def cake_data(filtered_steps, cake_graph_data):
 
-    data = pd.read_csv(r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv', sep=",", encoding='latin1')
+    data = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
 
     step_1 = list(set(data["Step 1"].dropna()))
     step_1_lower = [elem.lower() for elem in step_1]
@@ -143,13 +201,13 @@ def plot_pie_chart(cake_graph_data):
 
     current_date = datetime.now()
     formatted_date = current_date.strftime("%Y-%m-%d")
-    output_dir = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output"
-    run_folder = os.path.join(output_dir, f"run_{formatted_date}")
+
+    run_folder = os.path.join(output_final, f"run_{formatted_date}")
 
     plt.savefig(os.path.join(run_folder, "pie_chart.png"))
-    plt.show()
+    #plt.show()
 
-def brutal_run(data_ops, data_intent, path, cake_graph_data):
+def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool):
 
     data_ops = convert_to_lowercase(data_ops)
     data_intent = convert_to_lowercase(data_intent)
@@ -180,29 +238,25 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data):
     current_date = datetime.now()
     formatted_date = current_date.strftime("%Y-%m-%d")
 
-# Definisci il percorso assoluto della cartella di output
+    run_folder = os.path.join(output_final, f"run_{formatted_date}")
 
-    output_dir = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output"
-    run_folder = os.path.join(output_dir, f"run_{formatted_date}")
-    # Crea la directory 'output\run_{formatted_date}' se non esiste
     if not os.path.exists(run_folder):
         os.makedirs(run_folder)
         print(f"Cartella '{run_folder}' creata con successo!")
     else:
         print(f"Cartella '{run_folder}' esiste già.")
 
-    # Definisci i percorsi per i file che vuoi creare o aprire
-    file_path = os.path.join(run_folder, f"ops_{formatted_date}.txt")
-
     no_llm_session_ids = []
     llm_session_ids = []
+    no_llm_session_ids_filtered = []
+    path = os.path.join(output_final, f"run_{formatted_date}", f"ops_{date}.txt")
 
-    with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/ops_{date}.txt", "a", encoding="utf-8") as file:
+    with open(path, "a", encoding="utf-8") as file:
         i = 1
         for session_id in session_ids:
             filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
             conv = filtered_data_sessionIds["Query"].tolist()
-            print(conv)
+            # print(conv)
 
             found_llm = False
 
@@ -218,31 +272,46 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data):
             filtered_steps = [step for step in conv if step not in ignore_steps]
             filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
 
-            print(filtered_steps)
-
-            print(filtered_steps)
-
             cake_data(filtered_steps, cake_graph_data)
 
-            print("°"*1000)
-            result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
-            i += 1
-            file.write(result)
-            no_llm_session_ids.append(session_id)
+            if filter_flag:
+                check = False
+                for step in filtered_steps:
+                    if "mav" in step or "rav" in step or "f24" in step:
+                        if session_id not in no_llm_session_ids_filtered:
+                            no_llm_session_ids_filtered.append(session_id)
+                            check = True
+
+                if check:
+                    result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+                    i += 1
+                    file.write(result)
+
+            else:
+                result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+                i += 1
+                file.write(result)
+                no_llm_session_ids.append(session_id)
 
     # print(llm_session_ids)
     # print(len(llm_session_ids))
     # print(no_llm_session_ids)
     # print(len(no_llm_session_ids))
 
-    with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/ops_{date}.txt", "a") as file:
+
+    if filter_flag == True:
+        current_session_ids = no_llm_session_ids_filtered
+    else:
+        current_session_ids = no_llm_session_ids
+
+    with open(os.path.join(output_final, f"run_{formatted_date}/ops_{date}.txt"), "a") as file:
         file.write("\n")
-        for session_id in no_llm_session_ids:
+        for session_id in current_session_ids:
             file.write(session_id)
             file.write("\n")
 
     check_point = []
-    for session_id in no_llm_session_ids:
+    for session_id in current_session_ids:
         filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
         conv = filtered_data_sessionIds["Query"].tolist()
         filtered_steps = [step for step in conv if step not in ignore_steps]
@@ -295,7 +364,10 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data):
         italian_intent = filtered_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
         answer = filtered_df["answers"].tolist()
 
-        with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/similarity_check_{date}.txt", "a", encoding="utf-8") as file:
+        file_path = os.path.join(output_final, f'run_{formatted_date}/similarity_check_{date}.txt')
+        with open(file_path, "a", encoding="utf-8") as file:
+            # Your code to write to the file
+
             for i, a in zip(italian_intent, answer):
                 #print("-"*1000)
                 #print(f"Richiesta utente: {elem[0]}")
@@ -313,7 +385,8 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data):
                 file.write(f"Similarity answer score: {match_answer}\n")
                 
                 if float(match_intent) > 0.55 or float(match_answer) > 0.55:
-                    with open(rf"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\output\run_{formatted_date}/best_similarity_scores.txt", "a", encoding="utf-8") as file1:
+                    file_path = os.path.join(output_final, f'run_{formatted_date}/best_similarity_scores.txt')
+                    with open(file_path, "a", encoding="utf-8") as file1:
                         file1.write("\n")
                         file1.write(f"Data: {date}\n")
                         file1.write("\n")
@@ -339,7 +412,6 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data):
 
 
 
-
 #convert_xlsx_to_csv(input_directory, output_directory)
 
 cake_graph_data = {}
@@ -347,8 +419,10 @@ for path in paths:
     data_ops = pd.read_csv(path, sep=",", encoding='latin1')
     data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
 
-    brutal_run(data_ops, data_intent, path, cake_graph_data)
+    brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=True)
+
 
 plot_pie_chart(cake_graph_data)
+delete_empty_content_files_in_subfolder(output_final)
 
 
