@@ -5,6 +5,9 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import os
 from datetime import datetime
+from tqdm import tqdm
+import time
+import sys
 
 def convert_xlsx_to_csv(input_directory, output_directory):
 
@@ -33,7 +36,6 @@ def get_project_path(*subdirs):
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     ING_dev_folder = current_dir.replace("\lib", "")
-    #print("ing_dev ", ING_dev_folder)
     full_path = os.path.join(ING_dev_folder, *subdirs)
 
     return full_path
@@ -46,12 +48,9 @@ def get_project_path(*subdirs):
 
 input_directory = get_project_path('data')
 output_directory = get_project_path('csv_data')
-
 output_final = get_project_path('output')
-
 file_path_intent = get_project_path('NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv')
 local_model_path = get_project_path('paraphrase-multilingual-MiniLM-L12-v2-local')
-
 
 model = SentenceTransformer(local_model_path)
 paths = get_file_paths(output_directory)
@@ -65,53 +64,48 @@ def to_title_case(s):
     return s
 
 def delete_empty_content_files_in_subfolder(output_folder):
-    # Verifica se la cartella di output esiste
     if not os.path.isdir(output_folder):
-        print(f"La cartella '{output_folder}' non esiste.")
+        (f"La cartella '{output_folder}' non esiste.")
         return
 
-    # Ottieni la lista delle sottocartelle nella cartella di output
     subfolders = [f.path for f in os.scandir(output_folder) if f.is_dir()]
 
-    # Controlla se c'è almeno una sottocartella
     if not subfolders:
         print(f"Nessuna sottocartella trovata nella cartella '{output_folder}'.")
         return
 
-    # Prende la prima sottocartella (se ce ne sono più di una, modifica secondo le tue necessità)
     subfolder = subfolders[0]
-
-    # Itera su tutti i file nella sottocartella
     for file_name in os.listdir(subfolder):
         file_path = os.path.join(subfolder, file_name)
 
-        # Verifica se è un file (e non una directory)
         if os.path.isfile(file_path):
+
+            if file_name.lower().endswith('.png'):
+                #print(f"Ignorando il file PNG: '{file_path}'")
+                continue
+
             try:
-                # Verifica se il file contiene qualcosa (non solo spazi o righe vuote)
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read().strip()
 
-                # Dopo aver chiuso il file, verifica se è vuoto
-                if not content:  # Se content è vuoto dopo aver tolto gli spazi
-                    time.sleep(0.1)  # Attendi per garantire che il file sia completamente chiuso
+                if not content:
+                    time.sleep(0.1)
                     os.remove(file_path)
-                    print(f"File '{file_path}' eliminato perché vuoto (o contenente solo spazi).")
-                else:
-                    print(f"File '{file_path}' contiene testo, non eliminato.")
+                    #print(f"File '{file_path}' eliminato perché vuoto (o contenente solo spazi).")
+                # else:
+                #     print(f"File '{file_path}' contiene testo, non eliminato.")
             except PermissionError as e:
                 print(f"Errore: Impossibile eliminare '{file_path}' perché è in uso: {e}")
             except Exception as e:
                 print(f"Errore: Si è verificato un problema con il file '{file_path}': {e}")
-        else:
-            print(f"'{file_path}' non è un file, non verrà eliminato.")
+
+        # elif os.path.isfile(file_path) == "pie_chart.png":
+        #     continue
 
 def MiniLM_similarity_score(model, sentences):
 
     embeddings = model.encode(sentences)
     similarity_matrix = cosine_similarity(embeddings)
-    # #print("Similarity Matrix:")
-    # #print(np.array2string(similarity_matrix, precision=2, suppress_small=True))
     threshold = 0.7  # Define a threshold for similarity
     is_match_intent = similarity_matrix[0][1] > threshold
     is_match_response = similarity_matrix[0][2] > threshold
@@ -179,25 +173,23 @@ def plot_pie_chart(cake_graph_data):
         labels=labels,
         autopct='%1.1f%%',
         startangle=90,
-        explode=explode,  # Esplosione della fetta più grande
-        colors=colors,     # Colori personalizzati
-        shadow=True,       # Aggiunta dell'ombra
-        wedgeprops={'edgecolor': 'black'},  # Bordo nero attorno alle sezioni
-        textprops={'fontsize': 12}  # Imposta la dimensione del testo
+        explode=explode,
+        colors=colors,
+        shadow=True,
+        wedgeprops={'edgecolor': 'black'},
+        textprops={'fontsize': 12}
     )
 
-    # Migliora la leggibilità delle percentuali all'interno delle sezioni
     for autotext in autotexts:
-        autotext.set_color('black')  # Colore bianco per contrasto
-        autotext.set_fontsize(14)    # Aumenta la dimensione del testo
+        autotext.set_color('black')
+        autotext.set_fontsize(14)
 
-    # Migliora il layout delle etichette
     for text in texts:
-        text.set_fontsize(12)  # Imposta la dimensione del testo delle etichette
+        text.set_fontsize(12)
 
-    plt.axis('equal')  # Assicura che il grafico sia un cerchio perfetto
+    plt.axis('equal')
     plt.title('Distribuzione degli Steps', fontsize=16)
-    plt.tight_layout()  # Assicura che tutto rientri nella figura
+    plt.tight_layout()
 
     current_date = datetime.now()
     formatted_date = current_date.strftime("%Y-%m-%d")
@@ -207,7 +199,7 @@ def plot_pie_chart(cake_graph_data):
     plt.savefig(os.path.join(run_folder, "pie_chart.png"))
     #plt.show()
 
-def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool):
+def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, key_words:list):
 
     data_ops = convert_to_lowercase(data_ops)
     data_intent = convert_to_lowercase(data_intent)
@@ -242,164 +234,173 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool):
 
     if not os.path.exists(run_folder):
         os.makedirs(run_folder)
-        print(f"Cartella '{run_folder}' creata con successo!")
-    else:
-        print(f"Cartella '{run_folder}' esiste già.")
+    #     print(f"Cartella '{run_folder}' creata con successo!")
+    # else:
+    #     print(f"Cartella '{run_folder}' esiste già.")
 
     no_llm_session_ids = []
     llm_session_ids = []
     no_llm_session_ids_filtered = []
     path = os.path.join(output_final, f"run_{formatted_date}", f"ops_{date}.txt")
 
-    with open(path, "a", encoding="utf-8") as file:
-        i = 1
-        for session_id in session_ids:
-            filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
-            conv = filtered_data_sessionIds["Query"].tolist()
-            # print(conv)
+    with tqdm(total=len(session_ids), desc="Evaluating ops...", unit='item', disable=True) as pbar:
+        with open(path, "a", encoding="utf-8") as file:
 
-            found_llm = False
+            i = 1
+            for session_id in session_ids:
+                #print('\n')
+                filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
+                conv = filtered_data_sessionIds["Query"].tolist()
+                # print(conv)
 
-            for tok in conv:
-                if tok == "llm":
-                    llm_session_ids.append(session_id)
-                    found_llm = True
-                    break
+                found_llm = False
 
-            if found_llm:
-                continue
+                for tok in conv:
+                    if tok == "llm":
+                        llm_session_ids.append(session_id)
+                        found_llm = True
+                        break
 
-            filtered_steps = [step for step in conv if step not in ignore_steps]
-            filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
+                if found_llm:
+                    continue
 
-            cake_data(filtered_steps, cake_graph_data)
+                filtered_steps = [step for step in conv if step not in ignore_steps]
+                filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
 
-            if filter_flag:
-                check = False
-                for step in filtered_steps:
-                    if "mav" in step or "rav" in step or "f24" in step:
-                        if session_id not in no_llm_session_ids_filtered:
-                            no_llm_session_ids_filtered.append(session_id)
-                            check = True
+                cake_data(filtered_steps, cake_graph_data)
 
-                if check:
+                if filter_flag and key_words is not None:
+                    check = False
+                    for step in filtered_steps:
+                        if any(element in step for element in key_words):
+                            if session_id not in no_llm_session_ids_filtered:
+                                no_llm_session_ids_filtered.append(session_id)
+                                check = True
+
+                    if check:
+                        result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+                        i += 1
+                        file.write(result)
+
+                else:
                     result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
                     i += 1
                     file.write(result)
+                    no_llm_session_ids.append(session_id)
 
-            else:
-                result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
-                i += 1
-                file.write(result)
-                no_llm_session_ids.append(session_id)
+                #pbar.update(1)
+        # print(llm_session_ids)
+        # print(len(llm_session_ids))
+        # print(no_llm_session_ids)
+        # print(len(no_llm_session_ids))
 
-    # print(llm_session_ids)
-    # print(len(llm_session_ids))
-    # print(no_llm_session_ids)
-    # print(len(no_llm_session_ids))
+        if filter_flag == True:
+            current_session_ids = no_llm_session_ids_filtered
+        else:
+            current_session_ids = no_llm_session_ids
 
-
-    if filter_flag == True:
-        current_session_ids = no_llm_session_ids_filtered
-    else:
-        current_session_ids = no_llm_session_ids
-
-    with open(os.path.join(output_final, f"run_{formatted_date}/ops_{date}.txt"), "a") as file:
-        file.write("\n")
-        for session_id in current_session_ids:
-            file.write(session_id)
+        with open(os.path.join(output_final, f"run_{formatted_date}/ops_{date}.txt"), "a") as file:
             file.write("\n")
+            for session_id in current_session_ids:
+                file.write(session_id)
+                file.write("\n")
 
-    check_point = []
-    for session_id in current_session_ids:
-        filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
-        conv = filtered_data_sessionIds["Query"].tolist()
-        filtered_steps = [step for step in conv if step not in ignore_steps]
-        conv_path = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+        check_point = []
+
+        with tqdm(total=len(current_session_ids), desc="Evaluating ops...", unit='item', disable=False, leave=True) as pbar:
+            for session_id in current_session_ids:
+                filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
+                conv = filtered_data_sessionIds["Query"].tolist()
+                filtered_steps = [step for step in conv if step not in ignore_steps]
+                conv_path = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+
+                current_df = data_intent.copy()
+                old_step = ""
+                for i, column in enumerate(columns):
+                    if i >= len(filtered_steps):
+                        #print(f"Non ci sono abbastanza passi per la colonna {column}.")
+                        break
+
+                    step = filtered_steps[i]
+                   # step = to_title_case(filtered_steps[i])
+                    if "99" in step:
+                        mod_step = step.replace('99', '24')
+                        step = mod_step
+
+                    if step not in all_steps:
+                        #print(f"'{step}' is not a step!")
+                        italian_intent = current_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
+                        answer = current_df["answers"].tolist()
+
+                        #print(len(italian_intent))
+                        #print(old_step)
+                        #print(columns[i-1])
+                        #print(italian_intent[0])
+                        #print(answer[0])
+                        check_point.append([step, old_step, columns[i-1], conv_path])
+                        break
+
+                    else:
+                        #print(current_df["Step 2"])
+                        if column in current_df.columns:
+                            df_filtered = current_df[current_df[column] == step]
+                            current_df = df_filtered
+                        else:
+                            #print(f"Colonna '{column}' non trovata nel DataFrame.")
+                            current_df = pd.DataFrame()
+                        #print(f"Colonna: {column}")
+                        #print("DataFrame filtrato:")
+                        #print(current_df)
+                        #print('-' * 40)
+                        old_step = step
+
+                pbar.update(1)
+                sys.stdout.flush()
 
 
-        current_df = data_intent.copy()
-        old_step = ""
-        for i, column in enumerate(columns):
-            if i >= len(filtered_steps):
-                #print(f"Non ci sono abbastanza passi per la colonna {column}.")
-                break
 
-            step = filtered_steps[i]
-           # step = to_title_case(filtered_steps[i])
-            if "99" in step:
-                mod_step = step.replace('99', '24')
-                step = mod_step
+    with tqdm(total=len(check_point), desc="Doing similarity...", unit="item") as pbar:
+        for elem in check_point:
+            filtered_df = data_intent[data_intent[elem[2]].isin([elem[1]])]
+            italian_intent = filtered_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
+            answer = filtered_df["answers"].tolist()
 
-            if step not in all_steps:
-                #print(f"'{step}' is not a step!")
-                italian_intent = current_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
-                answer = current_df["answers"].tolist()
+            # Definisci il percorso del file e aprilo in modalità append
+            file_path = os.path.join(output_final, f'run_{formatted_date}/similarity_check_{date}.txt')
+            with open(file_path, "a", encoding="utf-8") as file:
+                # Scrivi i dettagli di ciascun elemento nel file
+                for i, a in zip(italian_intent, answer):
+                    match_intent, match_answer = MiniLM_similarity_score(model, [elem[0], i, a])
 
-                #print(len(italian_intent))
-                #print(old_step)
-                #print(columns[i-1])
-                #print(italian_intent[0])
-                #print(answer[0])
-                check_point.append([step, old_step, columns[i-1], conv_path])
-                break
+                    file.write("-" * 1000 + "\n")
+                    file.write(f"Path conversazione: {elem[3]}\n")
+                    file.write(f"Richiesta utente: {elem[0]}\n")
+                    file.write(f"Intento italiano: {i}\n")
+                    file.write(f"Possibile risposta: {a}\n")
+                    file.write(f"Similarity intent score: {match_intent}\n")
+                    file.write(f"Similarity answer score: {match_answer}\n")
 
-            else:
-                #print(current_df["Step 2"])
-                if column in current_df.columns:
-                    df_filtered = current_df[current_df[column] == step]
-                    current_df = df_filtered
-                else:
-                    #print(f"Colonna '{column}' non trovata nel DataFrame.")
-                    current_df = pd.DataFrame()
-                #print(f"Passo {i + 1}: {step}")
-                #print(f"Colonna: {column}")
-                #print("DataFrame filtrato:")
-                #print(current_df)
-                #print('-' * 40)
-                old_step = step
+                    if float(match_intent) > 0.55 or float(match_answer) > 0.55:
+                        best_file_path = os.path.join(output_final, f'run_{formatted_date}/best_similarity_scores.txt')
+                        with open(best_file_path, "a", encoding="utf-8") as file1:
+                            file1.write("\n")
+                            file1.write(f"Data: {date}\n")
+                            file1.write("\n")
+                            file1.write(f"Path conversazione: {elem[3]}\n")
+                            file1.write(f"Richiesta utente: {elem[0]}\n")
+                            file1.write("\n")
+                            file1.write(f"Intento italiano: {i}\n")
+                            file1.write("\n")
+                            file1.write(f"Possibile risposta: {a}\n")
+                            file1.write(f"Similarity intent score: {match_intent}\n")
+                            file1.write(f"Similarity answer score: {match_answer}\n")
+                            file1.write("\n")
+                            file1.write(f"{'°'*1000}\n")
 
-    for elem in check_point:
-        filtered_df = data_intent[data_intent[elem[2]].isin([elem[1]])]
-        italian_intent = filtered_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
-        answer = filtered_df["answers"].tolist()
+            # Aggiorna la barra di avanzamento
+            pbar.update(1)
+            sys.stdout.flush()
 
-        file_path = os.path.join(output_final, f'run_{formatted_date}/similarity_check_{date}.txt')
-        with open(file_path, "a", encoding="utf-8") as file:
-            # Your code to write to the file
-
-            for i, a in zip(italian_intent, answer):
-                #print("-"*1000)
-                #print(f"Richiesta utente: {elem[0]}")
-                #print(f"Intento italiano: {i}")
-                #print(f"Possibile risposta: {a}")
-                match_intent, match_answer = MiniLM_similarity_score(model, [elem[0], i, a])
-                #print("-"*1000)
-
-                file.write("-" * 1000 + "\n")
-                file.write(f"Path conversazione: {elem[3]}\n")
-                file.write(f"Richiesta utente: {elem[0]}\n")
-                file.write(f"Intento italiano: {i}\n")
-                file.write(f"Possibile risposta: {a}\n")
-                file.write(f"Similarity intent score: {match_intent}\n")
-                file.write(f"Similarity answer score: {match_answer}\n")
-                
-                if float(match_intent) > 0.55 or float(match_answer) > 0.55:
-                    file_path = os.path.join(output_final, f'run_{formatted_date}/best_similarity_scores.txt')
-                    with open(file_path, "a", encoding="utf-8") as file1:
-                        file1.write("\n")
-                        file1.write(f"Data: {date}\n")
-                        file1.write("\n")
-                        file1.write(f"Path conversazione: {elem[3]}\n")
-                        file1.write(f"Richiesta utente: {elem[0]}\n")
-                        file1.write(f"\n")
-                        file1.write(f"Intento italiano: {i}\n")
-                        file1.write(f"\n")
-                        file1.write(f"Possibile risposta: {a}\n")
-                        file1.write(f"Similarity intent score: {match_intent}\n")
-                        file1.write(f"Similarity answer score: {match_answer}\n")
-                        file1.write("\n")
-                        file1.write(f"{'°'*1000}\n")
 
                     # print(f"Path conversazione: {elem[3]}\n")
                     # print(f"Richiesta utente: {elem[0]}\n")
@@ -413,13 +414,24 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool):
 
 
 #convert_xlsx_to_csv(input_directory, output_directory)
+key_words = ["mav", "rav", "f24"]
 
 cake_graph_data = {}
-for path in paths:
-    data_ops = pd.read_csv(path, sep=",", encoding='latin1')
-    data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
+with tqdm(total=len(paths)) as pbar:
+    for path in paths:
+        pattern = r"Chat Bot Report (\d{4}-\d{2}-\d{2})"
+        match = re.search(pattern, path)
+        if match:
+            report_date = match.group(1)
+        pbar.set_description(f"Getting access to: Chatbot_report_{report_date}")
+        data_ops = pd.read_csv(path, sep=",", encoding='latin1')
+        data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
 
-    brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=True)
+        brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
+        pbar.update(1)
+        sys.stdout.flush()
+
+
 
 
 plot_pie_chart(cake_graph_data)
