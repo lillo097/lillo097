@@ -8,6 +8,7 @@ from datetime import datetime
 from tqdm import tqdm
 import time
 import sys
+import configparser
 
 def convert_xlsx_to_csv(input_directory, output_directory):
 
@@ -45,6 +46,12 @@ def get_project_path(*subdirs):
 # # file_path_ops = r"C:\Users\lbasile\PycharmProjects\ING_dev\csv_data\Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.csv"
 # file_path_intent = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv"
 #local_model_path = r"C:\Users\lbasile\PycharmProjects\lillo097\ING_dev\paraphrase-multilingual-MiniLM-L12-v2-local"
+
+config_file = get_project_path('lib', 'config.properties')
+config = configparser.ConfigParser()
+config.read(config_file)
+convert_switch = config.get('Parameters', 'convert_switch')
+key_words = config.get('Parameters', 'key_words').split(', ')
 
 input_directory = get_project_path('data')
 output_directory = get_project_path('csv_data')
@@ -228,7 +235,7 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                 all_steps.append(elem)
 
     current_date = datetime.now()
-    formatted_date = current_date.strftime("%Y-%m-%d")
+    formatted_date = current_date.strftime("%d-%m-%Y")
 
     run_folder = os.path.join(output_final, f"run_{formatted_date}")
 
@@ -411,30 +418,28 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                     # print("-"*1000)
                 #file.write("-" * 1000 + "\n")
 
+if convert_switch:
+    convert_xlsx_to_csv(input_directory, output_directory)
+else:
+    cake_graph_data = {}
+    with tqdm(total=len(paths)) as pbar:
+        for path in paths:
+            pattern = r"Chat Bot Report (\d{4}-\d{2}-\d{2})"
+            match = re.search(pattern, path)
+            if match:
+                report_date = match.group(1)
+            pbar.set_description(f"Getting access to: Chatbot_report_{report_date}")
+            data_ops = pd.read_csv(path, sep=",", encoding='latin1')
+            data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
 
-
-#convert_xlsx_to_csv(input_directory, output_directory)
-key_words = ["mav", "rav", "f24"]
-
-cake_graph_data = {}
-with tqdm(total=len(paths)) as pbar:
-    for path in paths:
-        pattern = r"Chat Bot Report (\d{4}-\d{2}-\d{2})"
-        match = re.search(pattern, path)
-        if match:
-            report_date = match.group(1)
-        pbar.set_description(f"Getting access to: Chatbot_report_{report_date}")
-        data_ops = pd.read_csv(path, sep=",", encoding='latin1')
-        data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
-
-        brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
-        pbar.update(1)
-        sys.stdout.flush()
+            brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
+            pbar.update(1)
+            sys.stdout.flush()
 
 
 
 
-plot_pie_chart(cake_graph_data)
-delete_empty_content_files_in_subfolder(output_final)
+    plot_pie_chart(cake_graph_data)
+    delete_empty_content_files_in_subfolder(output_final)
 
 
