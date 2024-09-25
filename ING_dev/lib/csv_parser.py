@@ -163,18 +163,23 @@ def cake_data(filtered_steps, cake_graph_data):
         cake_graph_data[current_last]["step"] = step
 
 def plot_pie_chart(cake_graph_data):
-    labels = list(cake_graph_data.keys())
-    sizes = [value['count'] for value in cake_graph_data.values()]
 
-    # Colori personalizzati
+    cake_graph_data.pop('', None)  # None evita un errore se la chiave non esiste
+
+    labels = list(cake_graph_data.keys())
+
+   #labels_cleaned = [label for label in labels if label.strip()]
+
+
+    sizes = [value['count'] for value in cake_graph_data.values()]
+    print(sizes)
+
     colors = plt.get_cmap('tab20')(range(len(sizes)))  # Palette di colori
 
-    # Esplosione per enfatizzare la fetta più grande
     explode = [0.1 if size == max(sizes) else 0 for size in sizes]
 
     plt.figure(figsize=(15, 15))
 
-    # Grafico a torta con effetti visivi migliorati
     wedges, texts, autotexts = plt.pie(
         sizes,
         labels=labels,
@@ -203,7 +208,7 @@ def plot_pie_chart(cake_graph_data):
 
     run_folder = os.path.join(output_final, f"run_{formatted_date}")
 
-    plt.savefig(os.path.join(run_folder, "pie_chart.png"))
+    plt.savefig(f"{run_folder}/pie_chart.png")
     #plt.show()
 
 def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, key_words:list):
@@ -235,7 +240,7 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                 all_steps.append(elem)
 
     current_date = datetime.now()
-    formatted_date = current_date.strftime("%d-%m-%Y")
+    formatted_date = current_date.strftime("%Y-%m-%d")
 
     run_folder = os.path.join(output_final, f"run_{formatted_date}")
 
@@ -274,7 +279,10 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                 filtered_steps = [step for step in conv if step not in ignore_steps]
                 filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
 
-                cake_data(filtered_steps, cake_graph_data)
+                if len(filtered_steps) == 0:
+                    continue
+                else:
+                    cake_data(filtered_steps, cake_graph_data)
 
                 if filter_flag and key_words is not None:
                     check = False
@@ -418,7 +426,7 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                     # print("-"*1000)
                 #file.write("-" * 1000 + "\n")
 
-if convert_switch:
+if convert_switch == True:
     convert_xlsx_to_csv(input_directory, output_directory)
 else:
     cake_graph_data = {}
@@ -435,8 +443,6 @@ else:
             brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
             pbar.update(1)
             sys.stdout.flush()
-
-
 
 
     plot_pie_chart(cake_graph_data)
