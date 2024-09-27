@@ -3,12 +3,14 @@ import pandas as pd
 import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import os
 from datetime import datetime
 from tqdm import tqdm
 import time
 import sys
 import configparser
+import os
+import shutil
+import json
 
 def convert_xlsx_to_csv(input_directory, output_directory):
 
@@ -21,7 +23,7 @@ def convert_xlsx_to_csv(input_directory, output_directory):
             df = pd.read_excel(xlsx_file, sheet_name="Details")
             csv_file = os.path.join(output_directory, filename.replace(".xlsx", ".csv"))
             df.to_csv(csv_file, index=False)
-            print(f"Converted {xlsx_file} to {csv_file}")
+            print(f"\nConverted {xlsx_file} to {csv_file}")
 
 def get_file_paths(directory):
 
@@ -41,26 +43,43 @@ def get_project_path(*subdirs):
 
     return full_path
 
-# input_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\data'
-# output_directory = r'C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\csv_data'
-# # file_path_ops = r"C:\Users\lbasile\PycharmProjects\ING_dev\csv_data\Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.csv"
-# file_path_intent = r"C:\Users\LF84ID\PycharmProjects\lillo097\ING_dev\NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv"
-#local_model_path = r"C:\Users\lbasile\PycharmProjects\lillo097\ING_dev\paraphrase-multilingual-MiniLM-L12-v2-local"
+def file_mover(input_directory, output_directory, clear_directory=None, file_name=None):
+    if not os.path.exists(input_directory):
+        print(f"La cartella sorgente {input_directory} non esiste.")
+        return
 
-config_file = get_project_path('lib', 'config.properties')
-config = configparser.ConfigParser()
-config.read(config_file)
-convert_switch = config.get('Parameters', 'convert_switch')
-key_words = config.get('Parameters', 'key_words').split(', ')
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+        print(f"Creata la cartella di destinazione: {output_directory}")
 
-input_directory = get_project_path('data')
-output_directory = get_project_path('csv_data')
-output_final = get_project_path('output')
-file_path_intent = get_project_path('NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv')
-local_model_path = get_project_path('paraphrase-multilingual-MiniLM-L12-v2-local')
+    for filename in os.listdir(input_directory):
+        if file_name:
+            file_sorgente = os.path.join(input_directory, file_name)
+            file_destinazione = os.path.join(output_directory, file_name)
+        else:
+            file_sorgente = os.path.join(input_directory, filename)
+            file_destinazione = os.path.join(output_directory, filename)
 
-model = SentenceTransformer(local_model_path)
-paths = get_file_paths(output_directory)
+        if os.path.isfile(file_sorgente):
+            shutil.move(file_sorgente, file_destinazione)
+            print(f"Spostato: {filename}")
+
+    if clear_directory:
+        if os.path.exists(clear_directory):
+            for filename in os.listdir(clear_directory):
+                file_da_eliminare = os.path.join(clear_directory, filename)
+
+                try:
+                    if os.path.isfile(file_da_eliminare) or os.path.islink(file_da_eliminare):
+                        os.unlink(file_da_eliminare)  # Cancella file o link simbolico
+                        print(f"Eliminato file: {filename}")
+                    elif os.path.isdir(file_da_eliminare):
+                        shutil.rmtree(file_da_eliminare)  # Cancella directory e tutto il contenuto
+                        print(f"Eliminata directory: {filename}")
+                except Exception as e:
+                    print(f"Errore durante l'eliminazione di {filename}: {e}")
+        else:
+            print(f"La cartella da svuotare {clear_directory} non esiste.")
 
 def convert_to_lowercase(df):
     return df.map(lambda x: x.lower() if isinstance(x, str) else x)
@@ -172,7 +191,7 @@ def plot_pie_chart(cake_graph_data):
 
 
     sizes = [value['count'] for value in cake_graph_data.values()]
-    print(sizes)
+
 
     colors = plt.get_cmap('tab20')(range(len(sizes)))  # Palette di colori
 
@@ -201,6 +220,7 @@ def plot_pie_chart(cake_graph_data):
 
     plt.axis('equal')
     plt.title('Distribuzione degli Steps', fontsize=16)
+    #plt.text(0, 0, f'Totale: {total_samples}', fontsize=14, ha='center')
     plt.tight_layout()
 
     current_date = datetime.now()
@@ -210,6 +230,26 @@ def plot_pie_chart(cake_graph_data):
 
     plt.savefig(f"{run_folder}/pie_chart.png")
     #plt.show()
+
+def gestisci_database(chiavi, frasi, nome_file='queries_DB.json'):
+    def aggiorna_database(chiavi, frasi, database):
+        for chiave, frase in zip(chiavi, frasi):
+            if chiave:
+                if chiave in database:
+                    database[chiave].append(frase)
+                else:
+                    database[chiave] = [frase]
+
+    if os.path.exists(os.path.join(data, nome_file)):
+        with open(os.path.join(data, nome_file), 'r') as f:
+            database = json.load(f)
+    else:
+        database = {}
+
+    aggiorna_database(chiavi, frasi, database)
+
+    with open(os.path.join(data, nome_file), 'w') as f:
+        json.dump(database, f, indent=4)
 
 def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, key_words:list):
 
@@ -255,53 +295,53 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
     no_llm_session_ids_filtered = []
     path = os.path.join(output_final, f"run_{formatted_date}", f"ops_{date}.txt")
 
-    with tqdm(total=len(session_ids), desc="Evaluating ops...", unit='item', disable=True) as pbar:
-        with open(path, "a", encoding="utf-8") as file:
+    #with tqdm(total=len(session_ids), desc="Evaluating ops...", unit='item', disable=True) as pbar:
+    with open(path, "a", encoding="utf-8") as file:
 
-            i = 1
-            for session_id in session_ids:
-                #print('\n')
-                filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
-                conv = filtered_data_sessionIds["Query"].tolist()
-                # print(conv)
+        i = 1
+        for session_id in session_ids:
+            #print('\n')
+            filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
+            conv = filtered_data_sessionIds["Query"].tolist()
+            # print(conv)
 
-                found_llm = False
+            found_llm = False
 
-                for tok in conv:
-                    if tok == "llm":
-                        llm_session_ids.append(session_id)
-                        found_llm = True
-                        break
+            for tok in conv:
+                if tok == "llm":
+                    llm_session_ids.append(session_id)
+                    found_llm = True
+                    break
 
-                if found_llm:
-                    continue
+            if found_llm:
+                continue
 
-                filtered_steps = [step for step in conv if step not in ignore_steps]
-                filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
+            filtered_steps = [step for step in conv if step not in ignore_steps]
+            filtered_steps = [step.replace('99', '24') if '99' in step else step for step in filtered_steps]
 
-                if len(filtered_steps) == 0:
-                    continue
-                else:
-                    cake_data(filtered_steps, cake_graph_data)
+            if len(filtered_steps) == 0:
+                continue
+            else:
+                cake_data(filtered_steps, cake_graph_data)
 
-                if filter_flag and key_words is not None:
-                    check = False
-                    for step in filtered_steps:
-                        if any(element in step for element in key_words):
-                            if session_id not in no_llm_session_ids_filtered:
-                                no_llm_session_ids_filtered.append(session_id)
-                                check = True
+            if filter_flag and key_words is not None:
+                check = False
+                for step in filtered_steps:
+                    if any(element in step for element in key_words):
+                        if session_id not in no_llm_session_ids_filtered:
+                            no_llm_session_ids_filtered.append(session_id)
+                            check = True
 
-                    if check:
-                        result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
-                        i += 1
-                        file.write(result)
-
-                else:
+                if check:
                     result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
                     i += 1
                     file.write(result)
-                    no_llm_session_ids.append(session_id)
+
+            else:
+                result = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+                i += 1
+                file.write(result)
+                no_llm_session_ids.append(session_id)
 
                 #pbar.update(1)
         # print(llm_session_ids)
@@ -320,60 +360,62 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                 file.write(session_id)
                 file.write("\n")
 
+        file.close()
+
         check_point = []
+        steps = []
+    with tqdm(total=len(current_session_ids), desc="Evaluating ops...", unit='item') as pbar:
+        for session_id in current_session_ids:
+            filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
+            conv = filtered_data_sessionIds["Query"].tolist()
+            filtered_steps = [step for step in conv if step not in ignore_steps]
+            conv_path = f"{i}. " + " --> ".join(filtered_steps) + "\n"
 
-        with tqdm(total=len(current_session_ids), desc="Evaluating ops...", unit='item', disable=False, leave=True) as pbar:
-            for session_id in current_session_ids:
-                filtered_data_sessionIds = data_ops[data_ops["Session ID"] == session_id]
-                conv = filtered_data_sessionIds["Query"].tolist()
-                filtered_steps = [step for step in conv if step not in ignore_steps]
-                conv_path = f"{i}. " + " --> ".join(filtered_steps) + "\n"
+            current_df = data_intent.copy()
+            old_step = ""
+            for i, column in enumerate(columns):
+                if i >= len(filtered_steps):
+                    #print(f"Non ci sono abbastanza passi per la colonna {column}.")
+                    break
 
-                current_df = data_intent.copy()
-                old_step = ""
-                for i, column in enumerate(columns):
-                    if i >= len(filtered_steps):
-                        #print(f"Non ci sono abbastanza passi per la colonna {column}.")
-                        break
+                step = filtered_steps[i]
+               # step = to_title_case(filtered_steps[i])
+                if "99" in step:
+                    mod_step = step.replace('99', '24')
+                    step = mod_step
 
-                    step = filtered_steps[i]
-                   # step = to_title_case(filtered_steps[i])
-                    if "99" in step:
-                        mod_step = step.replace('99', '24')
-                        step = mod_step
+                if step not in all_steps:
+                    #print(f"'{step}' is not a step!")
+                    italian_intent = current_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
+                    answer = current_df["answers"].tolist()
 
-                    if step not in all_steps:
-                        #print(f"'{step}' is not a step!")
-                        italian_intent = current_df["description of italian intents contained in the taxonomy (italian version)"].tolist()
-                        answer = current_df["answers"].tolist()
+                    #print(len(italian_intent))
+                    #print(old_step)
+                    #print(columns[i-1])
+                    #print(italian_intent[0])
+                    #print(answer[0])
+                    check_point.append([step, old_step, columns[i-1], conv_path])
+                    break
 
-                        #print(len(italian_intent))
-                        #print(old_step)
-                        #print(columns[i-1])
-                        #print(italian_intent[0])
-                        #print(answer[0])
-                        check_point.append([step, old_step, columns[i-1], conv_path])
-                        break
-
+                else:
+                    #print(current_df["Step 2"])
+                    if column in current_df.columns:
+                        df_filtered = current_df[current_df[column] == step]
+                        current_df = df_filtered
                     else:
-                        #print(current_df["Step 2"])
-                        if column in current_df.columns:
-                            df_filtered = current_df[current_df[column] == step]
-                            current_df = df_filtered
-                        else:
-                            #print(f"Colonna '{column}' non trovata nel DataFrame.")
-                            current_df = pd.DataFrame()
-                        #print(f"Colonna: {column}")
-                        #print("DataFrame filtrato:")
-                        #print(current_df)
-                        #print('-' * 40)
-                        old_step = step
+                        #print(f"Colonna '{column}' non trovata nel DataFrame.")
+                        current_df = pd.DataFrame()
+                    #print(f"Colonna: {column}")
+                    #print("DataFrame filtrato:")
+                    #print(current_df)
+                    #print('-' * 40)
+                    old_step = step
 
-                pbar.update(1)
-                sys.stdout.flush()
+            pbar.update(1)
+            sys.stdout.flush()
+            steps.append(old_step)
 
-
-
+        requests = []
     with tqdm(total=len(check_point), desc="Doing similarity...", unit="item") as pbar:
         for elem in check_point:
             filtered_df = data_intent[data_intent[elem[2]].isin([elem[1]])]
@@ -411,11 +453,10 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                             file1.write(f"Similarity answer score: {match_answer}\n")
                             file1.write("\n")
                             file1.write(f"{'°'*1000}\n")
-
+            requests.append(elem[0])
             # Aggiorna la barra di avanzamento
             pbar.update(1)
             sys.stdout.flush()
-
 
                     # print(f"Path conversazione: {elem[3]}\n")
                     # print(f"Richiesta utente: {elem[0]}\n")
@@ -426,26 +467,47 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
                     # print("-"*1000)
                 #file.write("-" * 1000 + "\n")
 
-if convert_switch == True:
-    convert_xlsx_to_csv(input_directory, output_directory)
-else:
-    cake_graph_data = {}
-    with tqdm(total=len(paths)) as pbar:
-        for path in paths:
-            pattern = r"Chat Bot Report (\d{4}-\d{2}-\d{2})"
-            match = re.search(pattern, path)
-            if match:
-                report_date = match.group(1)
-            pbar.set_description(f"Getting access to: Chatbot_report_{report_date}")
-            data_ops = pd.read_csv(path, sep=",", encoding='latin1')
-            data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
-
-            brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
-            pbar.update(1)
-            sys.stdout.flush()
+    return len(check_point), steps, requests
 
 
-    plot_pie_chart(cake_graph_data)
-    delete_empty_content_files_in_subfolder(output_final)
+config_file = get_project_path('lib', 'config.properties')
+config = configparser.ConfigParser()
+config.read(config_file)
+#convert_switch = config.get('Parameters', 'convert_switch')
+#key_words = config.get('Parameters', 'key_words').split(', ')
 
+input_directory = get_project_path('data', 'xlsx_data')
+output_directory = get_project_path('data', 'csv_data')
+bkp_directory = get_project_path('data', 'xlsx_data_bkp')
+output_final = get_project_path('output')
+data = get_project_path('data')
+file_path_intent = get_project_path('NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv')
+local_model_path = get_project_path('paraphrase-multilingual-MiniLM-L12-v2-local')
+
+model = SentenceTransformer(local_model_path)
+paths = get_file_paths(output_directory)
+
+# file_mover(input_directory=input_directory, output_directory=bkp_directory, clear_directory=output_directory)
+#
+# if convert_switch == "True":
+#     convert_xlsx_to_csv(input_directory, output_directory)
+# else:
+#     cake_graph_data = {}
+#     with tqdm(total=len(paths)) as pbar:
+#         for path in paths:
+#             pattern = r"Chat Bot Report (\d{4}-\d{2}-\d{2})"
+#             match = re.search(pattern, path)
+#             if match:
+#                 report_date = match.group(1)
+#             pbar.set_description(f"Getting access to: Chatbot_report_{report_date}")
+#             data_ops = pd.read_csv(path, sep=",", encoding='latin1')
+#             data_intent = pd.read_csv(file_path_intent, sep=",", encoding='latin1')
+#
+#             brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag=False, key_words=None)
+#             pbar.update(1)
+#             sys.stdout.flush()
+#
+#
+#     plot_pie_chart(cake_graph_data)
+#     delete_empty_content_files_in_subfolder(output_final)
 
