@@ -18,12 +18,19 @@ def convert_xlsx_to_csv(input_directory, output_directory):
         os.makedirs(output_directory)
 
     for filename in os.listdir(input_directory):
-        if filename.endswith(".xlsx"):
-            xlsx_file = os.path.join(input_directory, filename)
-            df = pd.read_excel(xlsx_file, sheet_name="Details")
-            csv_file = os.path.join(output_directory, filename.replace(".xlsx", ".csv"))
-            df.to_csv(csv_file, index=False)
-            print(f"\nConverted {xlsx_file} to {csv_file}")
+        if not filename.endswith(".xlsx"):
+            continue
+
+        xlsx_file = os.path.join(input_directory, filename)
+        csv_file = os.path.join(output_directory, filename.replace(".xlsx", ".csv"))
+
+        if os.path.exists(csv_file):
+            print(f"{csv_file} already exists. Skipping conversion.")
+            continue
+
+        df = pd.read_excel(xlsx_file, sheet_name="Details")
+        df.to_csv(csv_file, index=False)
+        print(f"Converted {xlsx_file} to {csv_file}")
 
 def get_file_paths(directory):
 
@@ -251,7 +258,7 @@ def gestisci_database(chiavi, frasi, nome_file='queries_DB.json'):
     with open(os.path.join(data, nome_file), 'w') as f:
         json.dump(database, f, indent=4)
 
-def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, key_words:list):
+def brutal_run(data_ops, data_intent, path, cake_graph_data, key_words:list):
 
     data_ops = convert_to_lowercase(data_ops)
     data_intent = convert_to_lowercase(data_intent)
@@ -324,7 +331,8 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
             else:
                 cake_data(filtered_steps, cake_graph_data)
 
-            if filter_flag and key_words is not None:
+            #if filter_flag and key_words is not None:
+            if key_words:
                 check = False
                 for step in filtered_steps:
                     if any(element in step for element in key_words):
@@ -349,7 +357,8 @@ def brutal_run(data_ops, data_intent, path, cake_graph_data, filter_flag:bool, k
         # print(no_llm_session_ids)
         # print(len(no_llm_session_ids))
 
-        if filter_flag == True:
+        #if filter_flag == True:
+        if key_words:
             current_session_ids = no_llm_session_ids_filtered
         else:
             current_session_ids = no_llm_session_ids
