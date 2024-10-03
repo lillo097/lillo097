@@ -1,0 +1,96 @@
+{
+    "carta prepagata": [
+        "buongiorno vorrei sapere qualcosa in pi\u00e3\u00b9 su alcuni addebiti",
+        "mancato pagamento acquisto online",
+        "parlare operatore",
+        "chattare con un agente"
+    ],
+    "tempistiche": [
+        "tempo"
+    ],
+    "carta di debito": [
+        "voglio attivare la mia nuova carta di debito",
+        "carta bloccata per pin errato",
+        "vorrei ricevere la nuova carta che \u00e3\u00a8 scaduta",
+        "carta bloccata per pin errato"
+    ],
+    "carte": [
+        "mi trovo due addebiti di 24\u00e2\u0082\u00ac quando io ne ho eseguito una transazione perch\u00e3\u00a9 ce ne due?",
+        "sostituzione carta di debito"
+    ],
+    "carta di credito": [
+        "come posso attivare la carta di debito bloccata",
+        "non funziona pi\u00e3\u00b9 il contactless nella mia carta di credito",
+        "voglio parlare con un operatore",
+        "non funziona pi\u00e3\u00b9 il contactless nella mia carta di credito",
+        "non riesco a richiedere la nuova carta di credito",
+        "come si fa ad eliminare un iban memorizzato dalla lista salvati nella compilazione dei bonifici?"
+    ],
+    "bonifici": [
+        "ho ricevuto un sms che mi avete bloccato un bonifico",
+        "devo annullare un bonifico",
+        "vorrei bloccare una transazione",
+        "buongiorno \u00e3\u00a8 stato fatto un pagamento su lightspeed che non \u00e3\u00a8 stato fatto da me",
+        "ho fatto un bonifico ieri ma il destinatario non ha ancora ricevuto",
+        "ho sbagliato",
+        "vorrei bloccare una transazione",
+        "ho fatto un bonifico ieri ma il destinatario non ha ancora ricevuto",
+        "buongiorno \u00e3\u00a8 stato fatto un pagamento su lightspeed che non \u00e3\u00a8 stato fatto da me",
+        "vorrei parlare con un consulente",
+        "si"
+    ],
+    "nuova richiesta": [
+        "ho bisogno di parlare con un operatore"
+    ],
+    "codici di accesso": [
+        "non riesco ad attivare l'app ing",
+        "come fare a contattarvi telefonicamente?",
+        "come fare a contattarvi telefonicamente?",
+        "non riesco ad attivare l'app ing",
+        "dove si trova il genera codice token? non lo trovo",
+        "come attivare accesso con impronta su app ?"
+    ],
+    "conto arancio": [
+        "come aprire conto arancio con digit% interessi",
+        "come sono calcolati gli interessi di postcodeeuro attesi a fine anno sul mio conto?",
+        "vorrei chiudere il conto",
+        "modificare pin per prelevare",
+        "come sono calcolati gli interessi di postcodeeuro attesi a fine anno sul mio conto?",
+        "come aprire conto arancio con digit% interessi",
+        "vorrei sapere gli interessi lordi del digit% fino a che somma posso ottenerlo?",
+        "volevo parlare con un operatore grazie"
+    ],
+    "prestito in corso": [
+        "ho richiesto un prestito. quando arriver\u00e3\u00a0 la risposta e come?",
+        "ho richiesto un prestito. quando arriver\u00e3\u00a0 la risposta e come?"
+    ],
+    "assegni": [
+        "vorrei parlare con un operatore",
+        "vorrei parlare con un operatore"
+    ],
+    "operazioni e pagamenti": [
+        "aiuto"
+    ],
+    "deposito arancio": [
+        "avvia la chat con un agente"
+    ],
+    "dati anagrafici e promozioni": [
+        "\u00e3\u0088 possibile pagare il bollo auto dal sito della banca?"
+    ],
+    "bonifico sospeso": [
+        "buona sera ho appena ricevuto un sms richiesta di bonifico da 249 euro. proceda al blocco se non riconosci questo pagamento, contatta il sup"
+    ],
+    "chiusura a scadenza": [
+        "buongiorno, volevo informazioni su salta una rata del prestito"
+    ],
+    "domiciliazioni e bollettini": [
+        "dovrei revocare un bonifico",
+        "interessi scoperto"
+    ],
+    "mav, rav, f24": [
+        "ho bisogno di fare un bonifico immediato"
+    ],
+    "caratteristiche": [
+        "si"
+    ]
+}
