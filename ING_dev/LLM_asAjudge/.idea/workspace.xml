@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="383d4357-985b-48e8-a922-b568b2a337a8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../NLU_mapping_intents_answers_v2 - Copy(Mapping intents-answers).csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-07-28T06_29_59.767Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-07-29T06_37_49.198Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-07-30T06_45_51.238Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-07-31T06_45_33.791Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-08-01T07_06_30.022Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../csv_data/Italy - Chat Bot Report 2024-08-02T06_53_30.780Z.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-07-27T06_32_51.072Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-07-28T06_29_59.767Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-07-29T06_37_49.198Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-07-30T06_45_51.238Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-07-31T06_45_33.791Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-08-01T07_06_30.022Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/Italy - Chat Bot Report 2024-08-02T06_53_30.780Z.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/queries_DB.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/config.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/csv_parser.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/get_LLM.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lib/zfg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-07-27.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-07-28.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-07-29.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-07-30.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-07-31.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-08-01.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/ops_2024-08-02.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-07-27.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-07-28.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-07-30.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-07-31.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-08-01.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/similarity_check_2024-08-02.txt" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;lillo097&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/lillo097/lillo097.git&quot;,
+    &quot;accountId&quot;: &quot;9c7d0157-0afc-4ce8-856c-e769fc54d993&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2mYciffVu1e47sghRDsV7ixTWW5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.LLM_as_a_judge_test.executor": "Run",
+    "Python.prova.executor": "Run",
+    "Python.srtyu.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/LF84ID/PycharmProjects/lillo097/ING_dev/LLM_asAjudge",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\LF84ID\PycharmProjects\Labelling\data\xlsx_data" />
+      <recent name="C:\Users\LF84ID\PycharmProjects\Labelling\data\input_data" />
+      <recent name="C:\Users\LF84ID\PycharmProjects\Labelling" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.LLM_as_a_judge_prod">
+    <configuration name="LLM_as_a_judge_prod" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Labelling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="GOOGLE_APPLICATION_CREDENTIALS" value="C:\Users\LF84ID\PycharmProjects\Labelling\i-hsvf-hxchi29m-5kfcbd03f5u2cf-1ebbc51d0448.json" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/lib" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/lib/LLM_as_a_judge_prod.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="LLM_as_a_judge_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Labelling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="GOOGLE_APPLICATION_CREDENTIALS" value="C:\Users\LF84ID\PycharmProjects\Labelling\i-hsvf-hxchi29m-5kfcbd03f5u2cf-1ebbc51d0448.json" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/lib" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/lib/LLM_as_a_judge_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.LLM_as_a_judge_prod" />
+      <item itemvalue="Python.LLM_as_a_judge_test" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.LLM_as_a_judge_test" />
+        <item itemvalue="Python.LLM_as_a_judge_prod" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="383d4357-985b-48e8-a922-b568b2a337a8" name="Changes" comment="" />
+      <created>1727257079078</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1727257079078</updated>
+      <workItem from="1727257086375" duration="7098000" />
+      <workItem from="1727269987075" duration="4595000" />
+      <workItem from="1727338556782" duration="28000" />
+      <workItem from="1727356161942" duration="14143000" />
+      <workItem from="1727682624080" duration="604000" />
+      <workItem from="1727962532379" duration="560000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/LLM_asAjudge$srtyu.coverage" NAME="srtyu Coverage Results" MODIFIED="1727962897865" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/lib" />
+    <SUITE FILE_PATH="coverage/Labelling$prova.coverage" NAME="prova Coverage Results" MODIFIED="1727277314461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/lib" />
+    <SUITE FILE_PATH="coverage/Labelling$LLM_as_a_judge_test.coverage" NAME="LLM_as_a_judge_test Coverage Results" MODIFIED="1727434454001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/lib" />
+  </component>
+</project>
